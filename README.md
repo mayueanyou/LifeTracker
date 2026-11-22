@@ -13,11 +13,12 @@ you can see your life clearly and change what you want to change.
 [Tell me what you think](https://github.com/mayueanyou/LifeTracker/issues/new/choose)
 
 <p align="center">
-  <img src="store/screenshots/phone-1.png" width="19%" alt="Your day as a map and a timeline">
-  <img src="store/screenshots/phone-2.png" width="19%" alt="Know what every stop cost">
-  <img src="store/screenshots/phone-3.png" width="19%" alt="Parking goes to the drive">
-  <img src="store/screenshots/phone-4.png" width="19%" alt="A month of spending at a glance">
-  <img src="store/screenshots/phone-5.png" width="19%" alt="See where your phone time goes">
+  <img src="store/screenshots/phone-1.png" width="16%" alt="Your day as a map and a timeline">
+  <img src="store/screenshots/phone-2.png" width="16%" alt="Know what every stop cost">
+  <img src="store/screenshots/phone-3.png" width="16%" alt="Parking goes to the drive">
+  <img src="store/screenshots/phone-4.png" width="16%" alt="A month of spending at a glance">
+  <img src="store/screenshots/phone-5.png" width="16%" alt="See where your phone time goes">
+  <img src="store/screenshots/phone-6.png" width="16%" alt="See where your time goes">
 </p>
 
 <sub>Screenshots show a made-up demo day, not a real person's places.</sub>
