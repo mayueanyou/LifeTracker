@@ -32,6 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.flow.first
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,6 +83,8 @@ import java.util.Locale
 
 // The timeline's scale: an hour is this tall.
 private val HOUR: Dp = 132.dp
+/** Below the now line on today's timeline: enough to see the entry under way, not the empty hours to come. */
+private val NOW_ROOM: Dp = 72.dp
 private val MIN_BLOCK: Dp = 26.dp     // the least an entry is drawn at, however brief
 private val AXIS: Dp = 52.dp
 private val ORANGE = Color(0xFFF97316)
@@ -297,13 +301,25 @@ private fun Timeline(record: DayRecord?, day: LocalDate, selected: Int?, onTap: 
     // Only once the day shown is the day asked for -- just after switching
     // day, the previous day's entries are still on screen, and scrolling to
     // them put a new day at the wrong hour.
-    LaunchedEffect(record?.day, entries.isNotEmpty()) {
+    // Back to the app, or a new stay or journey: today's view moves on with the clock.
+    var recenter by remember { mutableIntStateOf(0) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { recenter++ }
+    LaunchedEffect(record?.day, entries.size, recenter) {
         if (record?.day != day) return@LaunchedEffect
-        // Today opens around now; another day at its first entry after the night.
-        val now = System.currentTimeMillis()
-        val minute = if (day == LocalDate.now()) minuteOf(now) - 180
-        else entries.firstOrNull { minuteOf(it.start) >= 300 }?.let { minuteOf(it.start) - 30 } ?: 0.0
-        scroll.scrollTo(with(density) { (perMinute * maxOf(0.0, minute).toFloat()).roundToPx() })
+        val today = day == LocalDate.now()
+        // Looking at something you picked: left where it is.
+        if (today && selected != null) return@LaunchedEffect
+        // Today puts now near the bottom of what is visible, with the day so far above it;
+        // another day opens at its first entry after the night.
+        val viewport = snapshotFlow { scroll.viewportSize }.first { it > 0 }
+        val y = if (today) {
+            val nowY = with(density) { (perMinute * minuteOf(System.currentTimeMillis()).toFloat()).roundToPx() }
+            nowY - viewport + with(density) { NOW_ROOM.roundToPx() }
+        } else {
+            val minute = entries.firstOrNull { minuteOf(it.start) >= 300 }?.let { minuteOf(it.start) - 30 } ?: 0.0
+            with(density) { (perMinute * maxOf(0.0, minute).toFloat()).roundToPx() }
+        }
+        scroll.scrollTo(y.coerceAtLeast(0))
     }
     LaunchedEffect(selected) {
         val b = blocks.firstOrNull { it.index == selected } ?: return@LaunchedEffect
