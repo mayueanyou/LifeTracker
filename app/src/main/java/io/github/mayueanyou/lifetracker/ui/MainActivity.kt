@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
 
 private val Accent = Color(0xFF4F46E5)
 
-/** Record, Screen time, and Settings -- where everything that needs setting up lives. */
+/** Record, Summary, Screen time, and Settings -- where everything that needs setting up lives. */
 @Composable
 private fun Home() {
     val context = LocalContext.current
@@ -108,8 +108,9 @@ private fun Home() {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Box(Modifier.weight(1f)) {
             when (tab) {
-                0 -> RecordScreen(onOpenSettings = { if (Setup.needed(context)) setup = true else tab = 2 })
-                1 -> ScreenTimeScreen()
+                0 -> RecordScreen(onOpenSettings = { if (Setup.needed(context)) setup = true else tab = 3 })
+                1 -> SummaryScreen()
+                2 -> ScreenTimeScreen()
                 else -> SettingsScreen()
             }
         }
@@ -117,8 +118,10 @@ private fun Home() {
             NavigationBarItem(selected = tab == 0, onClick = { tab = 0 },
                 icon = { Text("🗺", fontSize = 20.sp) }, label = { Text("Record") })
             NavigationBarItem(selected = tab == 1, onClick = { tab = 1 },
-                icon = { Text("⏱", fontSize = 20.sp) }, label = { Text("Screen time") })
+                icon = { Text("📊", fontSize = 20.sp) }, label = { Text("Summary") })
             NavigationBarItem(selected = tab == 2, onClick = { tab = 2 },
+                icon = { Text("⏱", fontSize = 20.sp) }, label = { Text("Screen time") })
+            NavigationBarItem(selected = tab == 3, onClick = { tab = 3 },
                 icon = { Text("⚙", fontSize = 20.sp) }, label = { Text("Settings") })
         }
     }
@@ -185,7 +188,7 @@ private fun AccessCard() {
 }
 
 @Composable
-private fun DayBar(day: LocalDate, onDay: (LocalDate) -> Unit) {
+internal fun DayBar(day: LocalDate, onDay: (LocalDate) -> Unit) {
     val today = LocalDate.now()
     val name = when (day) {
         today -> "Today"

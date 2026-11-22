@@ -72,6 +72,8 @@ yourself a little better.
 - **Your day as a map and a timeline.** Every place you stayed and every
   journey between them — driving, walking or cycling — worked out from your
   phone's positions and drawn on a map, with a calendar-style timeline below.
+- **Where your time goes.** A summary of each day: hours at each place, every
+  visit added up, and time spent driving, walking and cycling, with distances.
 - **Where your money goes.** Card purchases read from your bank's
   notifications, each matched to the place you were when you paid. Day and
   month totals at the top, a cost on each event, and your own items for
