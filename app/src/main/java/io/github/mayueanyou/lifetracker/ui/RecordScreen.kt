@@ -296,6 +296,11 @@ private fun Timeline(record: DayRecord?, day: LocalDate, selected: Int?, onTap: 
             Block(i, top, height)
         }
     }
+    // Where today's now line goes: the clock's place -- or, when the last entry is
+    // a brief one drawn taller than it lasted, its bottom, so the line never cuts
+    // through what is happening now.
+    val nowAt = { perMinute * minuteOf(System.currentTimeMillis()).toFloat() }
+    val nowLine = { maxOf(nowAt(), blocks.lastOrNull()?.let { it.top + it.height } ?: 0.dp) }
     val scroll = rememberScrollState()
     val density = LocalDensity.current
     // Only once the day shown is the day asked for -- just after switching
@@ -313,7 +318,7 @@ private fun Timeline(record: DayRecord?, day: LocalDate, selected: Int?, onTap: 
         // another day opens at its first entry after the night.
         val viewport = snapshotFlow { scroll.viewportSize }.first { it > 0 }
         val y = if (today) {
-            val nowY = with(density) { (perMinute * minuteOf(System.currentTimeMillis()).toFloat()).roundToPx() }
+            val nowY = with(density) { nowLine().roundToPx() }
             nowY - viewport + with(density) { NOW_ROOM.roundToPx() }
         } else {
             val minute = entries.firstOrNull { minuteOf(it.start) >= 300 }?.let { minuteOf(it.start) - 30 } ?: 0.0
@@ -335,18 +340,20 @@ private fun Timeline(record: DayRecord?, day: LocalDate, selected: Int?, onTap: 
                 Text(hourName(h), Modifier.offset(y = HOUR * h - 7.dp).width(AXIS - 8.dp),
                     textAlign = TextAlign.End, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (day == LocalDate.now()) {
-                Box(Modifier.offset(x = AXIS - 6.dp, y = perMinute * minuteOf(System.currentTimeMillis()).toFloat() - 4.dp)
-                    .size(8.dp).clip(CircleShape).background(Color(0xFFEF4444)))
-                Box(Modifier.offset(y = perMinute * minuteOf(System.currentTimeMillis()).toFloat() - 1.dp)
-                    .padding(start = AXIS - 2.dp).fillMaxWidth().height(2.dp).background(Color(0xFFEF4444)))
-            }
             var stayNo = 0
             blocks.forEach { b ->
                 val e = entries[b.index]
                 val number = if (e is Entry.StayEntry) (++stayNo).toString() else null
                 EventBlock(e, number, b, b.index == selected, record?.money?.perEntry?.get(b.index),
                     record?.screen?.get(b.index).orEmpty()) { onTap(b.index) }
+            }
+            // Over the entries, so it shows even along the bottom edge of one.
+            if (day == LocalDate.now()) {
+                val y = nowLine()
+                Box(Modifier.offset(x = AXIS - 6.dp, y = y - 4.dp)
+                    .size(8.dp).clip(CircleShape).background(Color(0xFFEF4444)))
+                Box(Modifier.offset(y = y - 1.dp)
+                    .padding(start = AXIS - 2.dp).fillMaxWidth().height(2.dp).background(Color(0xFFEF4444)))
             }
         }
     }
