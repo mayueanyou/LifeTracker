@@ -62,6 +62,20 @@ object MoneyApps {
     fun version(context: Context) = prefs(context).getInt(KEY_VERSION, 0)
     fun changed(context: Context) { prefs(context).edit().putInt(KEY_VERSION, version(context) + 1).apply() }
 
+    /**
+     * [onChange] whenever money changes -- a purchase read, an app counted from
+     * its notification -- until the returned stop is called. Android keeps the
+     * listener only weakly; the stop holds it, so keep that.
+     */
+    fun watch(context: Context, onChange: () -> Unit): () -> Unit {
+        val p = prefs(context)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_VERSION) onChange()
+        }
+        p.registerOnSharedPreferenceChangeListener(listener)
+        return { p.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
     /** Whether Android lets the app read notifications at all. */
     fun hasAccess(context: Context): Boolean {
         val enabled = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") ?: return false

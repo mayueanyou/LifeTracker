@@ -96,9 +96,15 @@ private val Accent = Color(0xFF4F46E5)
 private fun Home() {
     val context = LocalContext.current
     var tab by remember { mutableStateOf(0) }
+    // The tour, once, on the first open -- and from Settings whenever asked for.
+    var tour by remember { mutableStateOf(!Intro.seen(context)) }
     // The setup guide, until everything the app needs is allowed -- and again if any of it is taken away.
     var setup by remember { mutableStateOf(Setup.needed(context)) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { if (Setup.needed(context)) setup = true }
+    if (tour) {
+        IntroVideo(last = if (setup) "Get started" else "Close") { Intro.markSeen(context); tour = false }
+        return
+    }
     if (setup) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             SetupGuide(onDone = { setup = false; tab = 0 })
@@ -111,7 +117,7 @@ private fun Home() {
                 0 -> RecordScreen(onOpenSettings = { if (Setup.needed(context)) setup = true else tab = 3 })
                 1 -> SummaryScreen()
                 2 -> ScreenTimeScreen()
-                else -> SettingsScreen()
+                else -> SettingsScreen(onTour = { tour = true })
             }
         }
         NavigationBar {

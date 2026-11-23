@@ -32,6 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import io.github.mayueanyou.lifetracker.money.MoneyApps
+import androidx.compose.runtime.DisposableEffect
 import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
@@ -108,6 +110,11 @@ fun RecordScreen(onOpenSettings: () -> Unit) {
     var month by remember { mutableStateOf<Money.Month?>(null) }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { refresh++ }
+    // A purchase read, or "Count" tapped in its notification: shown at once, not at the next minute.
+    DisposableEffect(Unit) {
+        val stop = MoneyApps.watch(context) { moneyTick++ }
+        onDispose { stop() }
+    }
     val scope = rememberCoroutineScope()
     // The "where am I" button: a fresh position, centred on the map.
     var located by remember { mutableStateOf<Fix?>(null) }

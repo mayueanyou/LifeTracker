@@ -95,7 +95,8 @@ Life Tracker is in testing and not on the Play Store yet.
 2. To get updates automatically, add this repository to
    [Obtainium](https://github.com/ImranR98/Obtainium):
    `https://github.com/mayueanyou/LifeTracker`.
-3. Open the app and go through its six quick steps — your location,
+3. Open the app: a one-minute tour shows how each part works (Skip any time;
+   it is in Settings › Tour for later). Then go through its six quick steps — your location,
    "Allow all the time", the recording notice, Battery **Unrestricted**,
    screen time, and your bank's notifications. Each is explained first, and
    each opens right where Android keeps that switch. Last, sign in with

@@ -77,7 +77,7 @@ private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
 
 /** Everything that is set up once: what Android allows, recording, money, and your places. */
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onTour: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var checks by remember { mutableIntStateOf(0) }
@@ -134,6 +134,11 @@ fun SettingsScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { Text("Settings", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
+        item {
+            Section("Tour", "A minute on how each part works — the map, costs, turning money on, the summary.") {
+                OutlinedButton(onClick = onTour) { Text("▶  Watch the tour") }
+            }
+        }
         item {
             Section("Permissions", "What Android asks for, one step at a time, each explained first.") {
                 Step("Usage access — for screen time", usage) {
