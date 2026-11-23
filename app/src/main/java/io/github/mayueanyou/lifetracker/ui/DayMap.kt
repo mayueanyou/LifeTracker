@@ -47,7 +47,7 @@ fun modeColour(mode: Mode) = when (mode) {
  * as its route in its mode's colour, a sample of its points as dots, arrows
  * riding inside some of them to show the way you went, and one numbered pin
  * per place -- a place you returned to shares one pin ("1·3"). Whatever is
- * selected turns orange and the other routes fade back.
+ * selected turns orange, is drawn on top, and the other routes fade right back.
  */
 @Composable
 fun DayMap(
@@ -88,12 +88,16 @@ private fun draw(map: MapView, context: Context, entries: List<Entry>, selected:
     val pickedRoute = selected != null && entries.getOrNull(selected) is Entry.JourneyEntry
 
     val routes = ArrayList<DotsOverlay.Route>()
-    entries.forEachIndexed { i, e ->
-        if (e !is Entry.JourneyEntry) return@forEachIndexed
+    // The picked journey goes last, so it is drawn over any other that runs along the same streets.
+    val order = entries.indices.sortedBy { it == selected }
+    order.forEach { i ->
+        val e = entries[i]
+        if (e !is Entry.JourneyEntry) return@forEach
         val j = e.journey
         val on = i == selected
         val colour = if (on) SELECTED else modeColour(j.mode)
-        val alpha = if (on) 1f else if (pickedRoute) 0.3f else 0.6f
+        // With one journey picked the others fall well back -- faint, and without arrows.
+        val alpha = if (on) 1f else if (pickedRoute) 0.15f else 0.6f
         val points = if (j.route.size > 1) j.route.map { GeoPoint(it.lat, it.lon) }
         else listOf(GeoPoint(j.fromLat, j.fromLon), GeoPoint(j.toLat, j.toLon))
         val line = Polyline(map).apply {
@@ -105,7 +109,8 @@ private fun draw(map: MapView, context: Context, entries: List<Entry>, selected:
             setOnClickListener { _, _, _ -> onSelect(i); true }
         }
         map.overlays.add(line)
-        if (j.route.size > 1) routes += DotsOverlay.Route(j.route, colour, if (on) 1f else if (pickedRoute) 0.35f else 0.95f, on)
+        if (j.route.size > 1) routes += DotsOverlay.Route(j.route, colour, if (on) 1f else if (pickedRoute) 0.18f else 0.95f, on,
+            quiet = pickedRoute && !on)
     }
     map.overlays.add(DotsOverlay(routes, density))
 
@@ -238,7 +243,7 @@ private fun hereBitmap(density: Float): Bitmap {
  * every redraw, so they stay true as the map zooms.
  */
 private class DotsOverlay(private val routes: List<Route>, private val density: Float) : Overlay() {
-    class Route(val points: List<RoutePoint>, val colour: Int, val alpha: Float, val selected: Boolean)
+    class Route(val points: List<RoutePoint>, val colour: Int, val alpha: Float, val selected: Boolean, val quiet: Boolean = false)
 
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
     private val white = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFFFFFFF.toInt() }
@@ -250,7 +255,7 @@ private class DotsOverlay(private val routes: List<Route>, private val density: 
         val q = Point()
         for (route in routes) {
             val along = progress(route.points)
-            val arrows = arrowPoints(along)
+            val arrows = if (route.quiet) emptySet() else arrowPoints(along)
             val dots = dotPoints(along, arrows)
             fill.color = withAlpha(route.colour, route.alpha)
             for (k in route.points.indices) {
